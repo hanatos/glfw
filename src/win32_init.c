@@ -167,6 +167,21 @@ static GLFWbool loadLibraries(void)
             _glfwPlatformGetModuleSymbol(_glfw.win32.ntdll.instance, "RtlVerifyVersionInfo");
     }
 
+    _glfw.win32.wintab32.instance = LoadLibraryA("Wintab32.dll");
+    if (_glfw.win32.wintab32.instance)
+    {
+        _glfw.win32.wintab32.WTInfoA = (PFN_WTInfoA)
+            GetProcAddress(_glfw.win32.wintab32.instance, "WTInfoA");
+        _glfw.win32.wintab32.WTOpenA = (PFN_WTOpenA)
+            GetProcAddress(_glfw.win32.wintab32.instance, "WTOpenA");
+        _glfw.win32.wintab32.WTQueueSizeSet = (PFN_WTQueueSizeSet)
+            GetProcAddress(_glfw.win32.wintab32.instance, "WTQueueSizeSet");
+        _glfw.win32.wintab32.WTClose = (PFN_WTClose)
+            GetProcAddress(_glfw.win32.wintab32.instance, "WTClose");
+        _glfw.win32.wintab32.WTPacket = (PFN_WTPacket)
+            GetProcAddress(_glfw.win32.wintab32.instance, "WTPacket");
+    }
+
     return GLFW_TRUE;
 }
 
@@ -191,6 +206,9 @@ static void freeLibraries(void)
 
     if (_glfw.win32.ntdll.instance)
         _glfwPlatformFreeModule(_glfw.win32.ntdll.instance);
+
+    if (_glfw.win32.wintab32.instance)
+        _glfwPlatformFreeModule(_glfw.win32.wintab32.instance);
 }
 
 // Create key code translation tables
@@ -364,6 +382,46 @@ static LRESULT CALLBACK helperWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
     }
 
     return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+}
+
+// Init wintab context see https://developer-docs.wacom.com/display/DevDocs/Windows+Wintab+Documentation
+//
+static void initWintabContext(HWND hwnd)
+{
+    if (_glfw.win32.wintab32.instance) {
+        LOGCONTEXTA context = {0};
+
+        _glfw.win32.wintab32.WTInfoA(4, 0, &context);
+        context.lcPktData = 0x0080 | 0x0100 | 0x0200 | 0x0040 | 0x0400 | 0x1000 | 0x0008 | 0x0020; // X Y Z BUTTONS NPRESSURE ORIENTATION CHANGED CURSOR
+        context.lcPktMode = 0;
+        context.lcMoveMask = context.lcPktData;
+        context.lcBtnUpMask = context.lcBtnDnMask;
+        context.lcOptions |= 0x0004; // CXO MESSAGES
+        context.lcOutOrgX = context.lcInOrgX;
+        context.lcOutOrgY = context.lcInOrgY;
+        context.lcOutExtX = context.lcInExtX;
+        context.lcOutExtY = -context.lcInExtY;
+
+        // open wintab context
+        _glfw.win32.wintab32.context = _glfw.win32.wintab32.WTOpenA(hwnd, &context, TRUE);
+        if (_glfw.win32.wintab32.context) {
+            _glfw.win32.wintab32.WTQueueSizeSet(_glfw.win32.wintab32.context, 256);
+            _glfw.win32.wintab32.WTInfoA(4, 0, &_glfw.win32.wintab32.contextInfo);
+            _glfw.win32.wintab32.WTInfoA(100, 15, &_glfw.win32.wintab32.pressureInfo);
+            _glfw.win32.wintab32.WTInfoA(100, 17, &_glfw.win32.wintab32.orientationInfo);
+        }
+    }
+    else {
+        _glfw.win32.wintab32.context = 0;
+    }
+}
+
+// Terminate wintab context
+//
+static void terminateWintabContext(void)
+{
+    if (_glfw.win32.wintab32.instance && _glfw.win32.wintab32.context)
+        _glfw.win32.wintab32.WTClose(_glfw.win32.wintab32.context);
 }
 
 // Creates a dummy window for behind-the-scenes work
@@ -698,6 +756,8 @@ int _glfwInitWin32(void)
     if (!createHelperWindow())
         return GLFW_FALSE;
 
+    initWintabContext(_glfw.win32.helperWindowHandle);
+
     _glfwPollMonitorsWin32();
     return GLFW_TRUE;
 }
@@ -723,6 +783,7 @@ void _glfwTerminateWin32(void)
     _glfwTerminateWGL();
     _glfwTerminateEGL();
     _glfwTerminateOSMesa();
+    terminateWintabContext();
 
     freeLibraries();
 }
