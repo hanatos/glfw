@@ -344,6 +344,78 @@ typedef BOOL (WINAPI * PFN_wglShareLists)(HGLRC,HGLRC);
 #define wglMakeCurrent _glfw.wgl.MakeCurrent
 #define wglShareLists _glfw.wgl.ShareLists
 
+// wintab.dll function pointer typedefs
+#define WT_PACKET 0x7FF0
+#define WT_PROXIMITY 0x7FF5
+DECLARE_HANDLE(HCTX);
+
+typedef struct tagAXIS {
+    LONG  min;
+    LONG  max;
+    UINT  units;
+    DWORD resolution;
+} AXIS;
+
+typedef struct tagORIENTATION {
+    int azimuth;
+    int altitude;
+    int twist;
+} ORIENTATION;
+
+typedef struct tagPACKET {
+    DWORD       changed;
+    UINT        cursor;
+    DWORD       buttons;
+    DWORD       x;
+    DWORD       y;
+    DWORD       z;
+    UINT        normalPressure;
+    ORIENTATION orientation;
+} PACKET;
+
+typedef struct LOGCONTEXTA {
+    char  lcName[40];
+    UINT  lcOptions;
+    UINT  lcStatus;
+    UINT  lcLocks;
+    UINT  lcMsgBase;
+    UINT  lcDevice;
+    UINT  lcPktRate;
+    DWORD lcPktData;
+    DWORD lcPktMode;
+    DWORD lcMoveMask;
+    DWORD lcBtnDnMask;
+    DWORD lcBtnUpMask;
+    LONG  lcInOrgX;
+    LONG  lcInOrgY;
+    LONG  lcInOrgZ;
+    LONG  lcInExtX;
+    LONG  lcInExtY;
+    LONG  lcInExtZ;
+    LONG  lcOutOrgX;
+    LONG  lcOutOrgY;
+    LONG  lcOutOrgZ;
+    LONG  lcOutExtX;
+    LONG  lcOutExtY;
+    LONG  lcOutExtZ;
+    DWORD lcSensX;
+    DWORD lcSensY;
+    DWORD lcSensZ;
+    BOOL  lcSysMode;
+    int   lcSysOrgX;
+    int   lcSysOrgY;
+    int   lcSysExtX;
+    int   lcSysExtY;
+    DWORD lcSysSensX;
+    DWORD lcSysSensY;
+} LOGCONTEXTA, *PLOGCONTEXTA, NEAR *NPLOGCONTEXTA, FAR *LPLOGCONTEXTA;
+
+typedef UINT (WINAPI * PFN_WTInfoA)(UINT,UINT,LPVOID);
+typedef HCTX (WINAPI * PFN_WTOpenA)(HWND,LPLOGCONTEXTA,BOOL);
+typedef BOOL (WINAPI * PFN_WTQueueSizeSet)(HCTX,int);
+typedef BOOL (WINAPI * PFN_WTClose)(HCTX);
+typedef BOOL (WINAPI * PFN_WTPacket)(HCTX,UINT,LPVOID);
+
 typedef VkFlags VkWin32SurfaceCreateFlagsKHR;
 
 typedef struct VkWin32SurfaceCreateInfoKHR
@@ -499,6 +571,20 @@ typedef struct _GLFWlibraryWin32
         HINSTANCE                       instance;
         PFN_RtlVerifyVersionInfo        RtlVerifyVersionInfo_;
     } ntdll;
+
+    struct {
+        HINSTANCE                       instance;
+        PFN_WTInfoA                     WTInfoA;
+        PFN_WTOpenA                     WTOpenA;
+        PFN_WTQueueSizeSet              WTQueueSizeSet;
+        PFN_WTClose                     WTClose;
+        PFN_WTPacket                    WTPacket;
+        HCTX                            context;
+        LOGCONTEXTA                     contextInfo;
+        AXIS                            pressureInfo;
+        AXIS                            orientationInfo[3];
+    } wintab32;
+
 } _GLFWlibraryWin32;
 
 // Win32-specific per-monitor data
