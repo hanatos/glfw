@@ -38,6 +38,8 @@
 // HACK: This enum value is missing from framework headers on OS X 10.11 despite
 //       having been (according to documentation) added in Mac OS X 10.7
 #define NSWindowCollectionBehaviorFullScreenNone (1 << 9)
+#define NSEventSubtypeTabletPoint NSTabletPointEventSubtype
+#define NSEventSubtypeTabletProximity NSTabletProximityEventSubtype
 
 // Returns whether the cursor is in the content area of the specified window
 //
@@ -430,7 +432,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 {
     if ([window->ns.object isKeyWindow])
     {
-        if ([event subtype] == NSTabletPointEventSubtype)
+        if ([event subtype] == NSEventSubtypeTabletPoint)
         {
             const double pressure = [event pressure];
             const NSPoint tilt = [event tilt];
@@ -455,7 +457,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
 
             _glfwInputPenTabletData(
                 pos.x,
-                transformY(pos.y),
+                (double)transformY((float)pos.y),
                 posz / 1024.0,
                 pressure,
                 pitch,
@@ -463,7 +465,7 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
                 0.0);
         }
 
-        if ([event subtype] == NSTabletProximityEventSubtype)
+        if ([event subtype] == NSEventSubtypeTabletProximity)
         {
             static unsigned int s_cursor = 0;
             unsigned int cursor = [event pointingDeviceType];
