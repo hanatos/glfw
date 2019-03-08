@@ -1121,7 +1121,7 @@ static void initPenTablet(Display *display)
     _glfw.x11.xi.eraser_deviceid = 0;
 
     if (_glfw.x11.xi.available)
-    { 
+    {
         int i, n;
         XIDeviceInfo *dev_info = XIQueryDevice(display, XIAllDevices, &n);
 
