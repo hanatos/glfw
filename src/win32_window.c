@@ -553,7 +553,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
             case WT_PROXIMITY:
             {
-                _glfwInputPenTabletProximity(lParam != 0);
+                _glfwInputPenTabletProximity(LOWORD(lParam));
             }
 
             case WT_PACKET:
