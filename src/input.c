@@ -1500,21 +1500,21 @@ GLFWAPI int glfwGetGamepadState(int jid, GLFWgamepadstate* state)
 GLFWAPI GLFWpentabletdatafun  glfwSetPenTabletDataCallback(GLFWpentabletdatafun cbfun)
 {
     _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
-    _GLFW_SWAP_POINTERS(_glfw.callbacks.pentabletdata, cbfun);
+    _GLFW_SWAP(GLFWpentabletdatafun, _glfw.callbacks.pentabletdata, cbfun);
     return cbfun;
 }
 
 GLFWAPI GLFWpentabletcursorfun  glfwSetPenTabletCursorCallback(GLFWpentabletcursorfun cbfun)
 {
     _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
-    _GLFW_SWAP_POINTERS(_glfw.callbacks.pentabletcursor, cbfun);
+    _GLFW_SWAP(GLFWpentabletcursorfun, _glfw.callbacks.pentabletcursor, cbfun);
     return cbfun;
 }
 
 GLFWAPI GLFWpentabletproximityfun  glfwSetPenTabletProximityCallback(GLFWpentabletproximityfun cbfun)
 {
     _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
-    _GLFW_SWAP_POINTERS(_glfw.callbacks.pentabletproximity, cbfun);
+    _GLFW_SWAP(GLFWpentabletproximityfun, _glfw.callbacks.pentabletproximity, cbfun);
     return cbfun;
 }
 
