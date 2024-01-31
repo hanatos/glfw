@@ -532,19 +532,24 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     _GLFWwindow* window = GetPropW(hWnd, L"GLFW");
     if (!window)
     {
-        if (uMsg == WM_NCCREATE)
+        switch (uMsg)
         {
-            if (_glfwIsWindows10Version1607OrGreaterWin32())
+            case WM_NCCREATE:
             {
-                const CREATESTRUCTW* cs = (const CREATESTRUCTW*) lParam;
-                const _GLFWwndconfig* wndconfig = cs->lpCreateParams;
+                if (_glfwIsWindows10Version1607OrGreaterWin32())
+                {
+                    const CREATESTRUCTW* cs = (const CREATESTRUCTW*) lParam;
+                    const _GLFWwndconfig* wndconfig = cs->lpCreateParams;
 
-                // On per-monitor DPI aware V1 systems, only enable
-                // non-client scaling for windows that scale the client area
-                // We need WM_GETDPISCALEDSIZE from V2 to keep the client
-                // area static when the non-client area is scaled
-                if (wndconfig && wndconfig->scaleToMonitor)
-                    EnableNonClientDpiScaling(hWnd);
+                    // On per-monitor DPI aware V1 systems, only enable
+                    // non-client scaling for windows that scale the client area
+                    // We need WM_GETDPISCALEDSIZE from V2 to keep the client
+                    // area static when the non-client area is scaled
+                    if (wndconfig && wndconfig->scaleToMonitor)
+                        EnableNonClientDpiScaling(hWnd);
+                }
+
+                break;
             }
 
             case WT_PROXIMITY:
